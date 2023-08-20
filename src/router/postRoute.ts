@@ -20,10 +20,11 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const data = req.body;
   try {
-    await prisma.post.create({
+    const post = await prisma.post.create({
       data: data,
     });
-    res.sendStatus(200);
+
+    res.json(post);
   } catch (error) {
     res.json(error);
   }
@@ -32,16 +33,17 @@ router.post("/", async (req, res) => {
 //like
 
 router.post("/updateLike", async (req, res) => {
-  const { userId, postId, numberLike } = req.query;
-
+  const { userId, postId, numberLike, isLike } = req.query;
   try {
     const post = await prisma.post.update({
       where: { userId: +userId!, id: +postId! },
-      data: { numberLike: +numberLike! + 1 },
+      data: {
+        numberLike: isLike === "true" ? +numberLike! + 1 : +numberLike! - 1,
+      },
     });
-    res.json(post);
+    res.json({ id: post.id, numberLike: post.numberLike });
   } catch (error) {
-    res.json(error);
+    res.sendStatus(404);
   }
 });
 export default router;
